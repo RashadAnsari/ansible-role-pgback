@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Set variables
+DATABASE_NAME="{{ postgresql_database }}"
+TIMESTAMP=$(date +"%Y%m%d%H%M%S")
+BACKUP_FILE="${DATABASE_NAME}-backup-${TIMESTAMP}.sql"
+S3_BUCKET="s3://{{ s3_bucket_name }}/"
+
+# Backup PostgreSQL database
+PGPASSWORD={{ postgresql_password }} pg_dump -U {{ postgresql_user }} -h {{ postgresql_host }} -p {{ postgresql_port }} -d {{ postgresql_database }} > ${BACKUP_FILE}
+
+# Upload to S3 using S3cmd
+s3cmd put ${BACKUP_FILE} ${S3_BUCKET}
+
+# Clean up local backup file
+rm ${BACKUP_FILE}
